@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# generated or raw data, not committed
+ clean/
+ data/raw/
