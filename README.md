@@ -8,7 +8,7 @@ Data Engineering course project, Assignment 1 (Data Architecture & Modeling).
 
 ## What it does
 
-A character is described by 525 personality scales (e.g. playful ↔ serious, scored 1 to 100). A job is described by 21 O\*NET "work styles" (e.g. Integrity, Attention to Detail), each with an impact value for that job. We compare the two through word-embedding similarity between the personality words and the work-style names, and combine them into a **Job Fit Score from 0 to 100** for every character and job pair (50 = neutral).
+A character is described by 525 personality scales (e.g. playful ↔ serious, scored 1 to 100). A job is described by 21 O\*NET® "work styles" (e.g. Integrity, Attention to Detail), each with an impact value for that job. We compare the two through word-embedding similarity between the personality words and the work-style names, and combine them into a **Job Fit Score from 0 to 100** for every character and job pair (50 = neutral).
 
 Questions the model answers (see `sql/demo_queries.sql`):
 
@@ -24,7 +24,7 @@ Questions the model answers (see `sql/demo_queries.sql`):
 | Source | Content | Link | Licence |
 |---|---|---|---|
 | Open-Source Psychometrics Project, "Which Character" quiz | 2,125 scored characters x 525 bipolar trait pairs, plus character and universe names | https://openpsychometrics.org/tests/characters/data/ | CC BY-NC-SA 4.0 |
-| O\*NET database, Work Styles | 891 jobs x 21 work styles (Work Styles Impact, `WI`) | https://www.onetcenter.org/database.html#wv | CC BY 4.0 |
+| O\*NET® 31.0 Database, Work Styles | 891 jobs x 21 work styles (Work Styles Impact, `WI`) | https://www.onetcenter.org/database.html#wv | CC BY 4.0 |
 
 The raw files are **not stored in this repository** (size and licence terms). `notebooks/dataengproject.ipynb` shows how they were loaded and checked.
 
@@ -122,12 +122,13 @@ Applied by `scripts/prepare_csv.py` and `sql/load_real_data.sql`:
 ## Licensing and attribution
 
 - **Code:** no licence chosen yet.
-- **Open-Source Psychometrics Project data:** CC BY-NC-SA 4.0 (attribution, non-commercial, share-alike). The data and files derived from it are not redistributed here.
-- **O\*NET data:** CC BY 4.0. This product includes information from the O\*NET Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the CC BY 4.0 license. O\*NET® is a trademark of USDOL/ETA.
+- **Open-Source Psychometrics Project data:** credit to the Open-Source Psychometrics Project, "Statistical 'Which Character' Personality Quiz" dataset (https://openpsychometrics.org/tests/characters/data/), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (attribution, non-commercial, share-alike). The data was transformed (see [Data-quality rules](#data-quality-rules)). Only short excerpts appear in the saved outputs of `notebooks/dataengproject.ipynb`; the full data and the derived tables are not redistributed here.
+- **O\*NET data:** this project includes information from the [O\*NET 31.0 Database](https://www.onetcenter.org/database.html) by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license. O\*NET® is a trademark of USDOL/ETA. The CharacterConnect project team has modified all or some of this information (only Work Styles Impact is used, and it is loaded into database tables; the changes are listed under [Data-quality rules](#data-quality-rules) and in `scripts/prepare_csv.py`). USDOL/ETA has not approved, endorsed, or tested these modifications.
 
 ## Team
 
-Three students: a data lead, a modelling lead, and an SQL and integration lead. 
-- Raphael Winttersdolf (@), data lead
-- Joudy Souleiman (@g), modelling lead
-- Rania Chaari (@), SQL and integration lead
+Three students:
+
+- Raphael Winttersdolf, data lead
+- Joudy Souleiman, modelling lead
+- Rania Chaari ([@Ranixcx](https://github.com/Ranixcx)), SQL and integration lead
