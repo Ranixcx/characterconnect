@@ -1,0 +1,98 @@
+-- DEMO QUERIES (Requirement 7), written against schema_v2_draft_1.sql (patched copy: schema_v2_for_real_data.sql).
+-- BEFORE running this file, run materialize_fit.sql once. It stores the fit view v_job_fit in a real table, fact_job_fit
+-- (one row per job x character, about 1.9 million rows). Re-run it whenever the similarity table or the scores change.
+-- Why: the view recomputes about 40 million job x character x trait rows every time it is read, which made Q6 run for minutes.
+-- Q4 explains ONE character for ONE job, so it still reads the detailed view v_fact_job_character_trait.
+-- If B renames anything in the schema, rename it here too (find and replace), then re-run.
+-- The questions below are working labels: swap in the exact wording from the final business brief.
+-- Written in standard SQL, so it runs in Postgres (the target) and in SQLite.
+
+
+-- Q1. Which jobs fit a given character best, and does the match carry any risk flag?
+--     (example: Jon Snow, character_code 'GOT/1')
+SELECT c.name                          AS character_name,
+       j.title                         AS job,
+       ROUND(f.job_fit_score, 1)       AS fit_score,        -- 0 = opposite of the job, 50 = neutral, 100 = perfect
+       f.risk_flag_count               AS risky_traits      -- how many of the 21 O*NET traits count against them
+FROM fact_job_fit f
+JOIN dim_character c ON c.character_key = f.character_key
+JOIN dim_job j       ON j.job_key = f.job_key
+WHERE c.character_code = 'GOT/1'
+ORDER BY f.job_fit_score DESC
+LIMIT 5;
+
+
+-- Q2. Which characters fit a given job best?   (example: Nuclear Engineers)
+SELECT c.name                          AS character_name,
+       c.work_code                     AS universe,
+       ROUND(f.job_fit_score, 1)       AS fit_score,
+       f.risk_flag_count               AS risky_traits
+FROM fact_job_fit f
+JOIN dim_character c ON c.character_key = f.character_key
+JOIN dim_job j       ON j.job_key = f.job_key
+WHERE j.title = 'Nuclear Engineers'
+ORDER BY f.job_fit_score DESC, c.name
+LIMIT 10;
+
+
+-- Q3. Which jobs come up most often as a character's single best match?
+--     (checks that the model does not send everybody to the same few jobs)
+WITH ranked AS (
+    SELECT job_key, character_key, job_fit_score,
+           ROW_NUMBER() OVER (PARTITION BY character_key
+                              ORDER BY job_fit_score DESC, job_key) AS rn
+    FROM fact_job_fit
+)
+SELECT j.title                         AS job,
+       COUNT(*)                        AS n_characters_best_match
+FROM ranked r
+JOIN dim_job j ON j.job_key = r.job_key
+WHERE r.rn = 1
+GROUP BY j.title
+ORDER BY n_characters_best_match DESC, j.title
+LIMIT 10;
+
+
+-- Q4. Why is a character risky for a job? List the O*NET traits that count against them.
+--     (example: Jon Snow applying as a Nuclear Engineer)
+SELECT t.name                          AS onet_trait,
+       ROUND(v.importance, 2)          AS importance_for_job,
+       ROUND(v.trait_level, 2)         AS character_level,  -- -1 = opposite of the trait, +1 = fully has it
+       ROUND(v.match_score, 2)         AS match_score       -- negative = counts against the character
+FROM v_fact_job_character_trait v
+JOIN dim_character c  ON c.character_key = v.character_key
+JOIN dim_job j        ON j.job_key = v.job_key
+JOIN dim_onet_trait t ON t.onet_trait_key = v.onet_trait_key
+WHERE c.character_code = 'GOT/1'
+  AND j.title = 'Nuclear Engineers'
+  AND v.match_score < 0
+ORDER BY v.match_score;
+
+
+-- Q5. HR question: for a given job, which universes (works) produce the best applicants on average?
+--     Universes with fewer than 5 characters are ignored so that one lucky character does not win.
+SELECT c.work_code                     AS universe,
+       COUNT(*)                        AS n_characters,
+       ROUND(AVG(f.job_fit_score), 1)  AS avg_fit_score
+FROM fact_job_fit f
+JOIN dim_character c ON c.character_key = f.character_key
+JOIN dim_job j       ON j.job_key = f.job_key
+WHERE j.title = 'Nuclear Engineers'
+GROUP BY c.work_code
+HAVING COUNT(*) >= 5
+ORDER BY avg_fit_score DESC
+LIMIT 10;
+
+
+-- Q6. KPIs: average best-fit score across all characters, and how many different jobs are somebody's best match.
+WITH best AS (
+    SELECT character_key, job_key, job_fit_score,
+           ROW_NUMBER() OVER (PARTITION BY character_key
+                              ORDER BY job_fit_score DESC, job_key) AS rn
+    FROM fact_job_fit
+)
+SELECT COUNT(*)                        AS n_characters,
+       ROUND(AVG(job_fit_score), 1)    AS avg_best_fit_score,
+       COUNT(DISTINCT job_key)         AS distinct_best_jobs
+FROM best
+WHERE rn = 1;
