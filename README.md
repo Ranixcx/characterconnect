@@ -127,4 +127,7 @@ Applied by `scripts/prepare_csv.py` and `sql/load_real_data.sql`:
 
 ## Team
 
-Three students: a data lead, a modelling lead, and an SQL and integration lead. *(Add names and GitHub handles here.)*
+Three students: a data lead, a modelling lead, and an SQL and integration lead. 
+- Raphael Winttersdolf (@), data lead
+- Joudy Souleiman (@g), modelling lead
+- Rania Chaari (@), SQL and integration lead
