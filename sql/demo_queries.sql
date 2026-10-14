@@ -18,7 +18,7 @@ FROM fact_job_fit f
 JOIN dim_character c ON c.character_key = f.character_key
 JOIN dim_job j       ON j.job_key = f.job_key
 WHERE c.character_code = 'GOT/1'
-ORDER BY f.job_fit_score DESC
+ORDER BY f.job_fit_score DESC, j.title
 LIMIT 5;
 
 
@@ -80,7 +80,7 @@ JOIN dim_job j       ON j.job_key = f.job_key
 WHERE j.title = 'Nuclear Engineers'
 GROUP BY c.work_code
 HAVING COUNT(*) >= 5
-ORDER BY avg_fit_score DESC
+ORDER BY avg_fit_score DESC, c.work_code
 LIMIT 10;
 
 
