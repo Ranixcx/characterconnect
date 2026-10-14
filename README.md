@@ -90,7 +90,7 @@ Star schema in short:
    docker exec charconnect psql -U postgres -f /load_sim.sql
    docker exec charconnect psql -U postgres -f /mat.sql
    ```
-   `load.sql` ends with a table where `n_rows` must equal `expected` on every line. `mat.sql` ends with 1,893,375 rows (891 jobs x 2,125 characters).
+   On a first run, `NOTICE: table ... does not exist, skipping` lines are normal. `load.sql` ends with a table where `n_rows` must equal `expected` on every line. `mat.sql` ends with 1,893,375 rows (891 jobs x 2,125 characters).
 6. **Run the demo queries:**
    ```
    docker exec charconnect psql -U postgres -f /demo.sql
