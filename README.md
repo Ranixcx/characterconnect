@@ -63,7 +63,7 @@ Star schema in short:
 
 ## How to run it
 
-**You need:** Python 3 with pandas (`pip install pandas`), and Docker Desktop. On Windows, use `py` instead of `python`.
+**You need:** Python 3 with pandas (`pip install pandas`), and Docker Desktop. 
 
 1. **Get the input files.** Create a folder `data/raw/` and put `key.js`, `characterScores.txt` and `work_styles.csv` in it (prepared from the two sources above, see the notebook).
 2. **Clean the data** from the repository root:
