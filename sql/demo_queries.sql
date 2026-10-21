@@ -1,8 +1,9 @@
 -- DEMO QUERIES (Requirement 7), written against schema_v2_draft_1.sql (patched copy: schema_v2_for_real_data.sql).
 -- BEFORE running this file, run materialize_fit.sql once. It stores the fit view v_job_fit in a real table, fact_job_fit
 -- (one row per job x character, about 1.9 million rows). Re-run it whenever the similarity table or the scores change.
--- Why: the view recomputes about 40 million job x character x trait rows every time it is read, which made Q6 run for minutes.
+-- Why: the view recomputes about 40 million job x character x trait rows every time it is read, which made the KPI query (Q7) run for minutes.
 -- Q4 explains ONE character for ONE job, so it still reads the detailed view v_fact_job_character_trait.
+-- Q6 reads only the character scores (no fit table).
 -- If B renames anything in the schema, rename it here too (find and replace), then re-run.
 -- The questions below are working labels: swap in the exact wording from the final business brief.
 -- Written in standard SQL, so it runs in Postgres (the target) and in SQLite.
@@ -84,7 +85,28 @@ ORDER BY avg_fit_score DESC, c.work_code
 LIMIT 10;
 
 
--- Q6. KPIs: average best-fit score across all characters, and how many different jobs are somebody's best match.
+-- Q6. Which characters have a personality closest to a typed-in profile?
+--     Example profile: bold, diligent and honorable. Scores run from 0 (low pole) to 100 (high pole).
+--     Uses only the SWCPQ scores, so its answer does not depend on the similarity table.
+WITH profile(trait_id, target) AS (
+    VALUES (2, 90),     -- shy (0) to bold (100): bold
+           (32, 10),    -- diligent (0) to lazy (100): diligent
+           (14, 90)     -- cunning (0) to honorable (100): honorable
+)
+SELECT c.name,
+       c.work_name                              AS universe,
+       ROUND(AVG(ABS(f.score - p.target)), 1)   AS avg_gap    -- 0 = identical profile
+FROM profile p
+JOIN dim_character_trait t         ON t.trait_id = p.trait_id
+JOIN fact_character_trait_score f  ON f.char_trait_key = t.char_trait_key
+JOIN dim_character c               ON c.character_key = f.character_key
+GROUP BY c.character_key, c.name, c.work_name
+ORDER BY avg_gap, c.name
+LIMIT 5;
+
+
+-- Q7. KPI query: How good are the best matches overall, and are they spread over many jobs or piled onto a few?
+--     (KPIs: average best-fit score across all characters, and how many different jobs are somebody's best match.)
 WITH best AS (
     SELECT character_key, job_key, job_fit_score,
            ROW_NUMBER() OVER (PARTITION BY character_key
