@@ -1,8 +1,3 @@
--- load_real_data.sql
--- Loads the CSVs written by prepare_csv.py into Postgres.
--- Run it AFTER schema_v2_for_real_data.sql. It can be re-run: it empties the schema tables first.
--- Step 1: copy each CSV as-is into a stg_ (staging) table.   Step 2: build dimensions, then facts, joining on natural keys.
--- The stg_ tables are kept on purpose: they are the "staging zone" of the pipeline.
 
 -- 0) empty the schema tables (also removes the 3-character test data) and restart the surrogate keys
 TRUNCATE fact_trait_similarity, fact_job_trait_importance, fact_character_trait_score,
