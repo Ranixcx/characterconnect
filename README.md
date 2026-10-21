@@ -131,6 +131,6 @@ Applied by `scripts/prepare_csv.py` and `sql/load_real_data.sql`:
 
 Three students:
 
-- Raphael Wintersdorff, ([@Slangster](https://github.com/Slangster)), data lead
-- Joudy Suleiman, ([@Joudy66](https://github.com/Joudy66)), modelling lead
+- Raphael Wintersdorff ([@Slangster](https://github.com/Slangster)), data lead
+- Joudy Suleiman ([@Joudy66](https://github.com/Joudy66)), modelling lead
 - Rania Chaari ([@Ranixcx](https://github.com/Ranixcx)), SQL and integration lead
