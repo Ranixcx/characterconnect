@@ -1,11 +1,3 @@
--- PATCHED COPY of B's schema_v2_draft_1.sql for loading the REAL data. Two edits only, marked PATCH 1 and PATCH 2.
--- The fit formula (tanh in v_job_fit) is deliberately NOT changed: that is B's decision.
--- DRAFT schema v2 (Postgres), updated for A's new data:
---   SWCPQ: 2125 characters scored on 525 bipolar trait pairs (trait_low / trait_high)
---   O*NET: 891 jobs x 21 traits (18,711 rows)
--- Review every column before it becomes schema.sql. Items marked TODO depend on A.
--- Design decisions (yours): surrogate integer key on each dimension, natural key kept
--- as a UNIQUE column; dim_onet_trait static, dim_job Type 1, dim_character Type 1.
 
 -- ===== Dimensions =====
 
