@@ -1,3 +1,13 @@
+-- DEMO QUERIES (Requirement 7), written against schema_v2_draft_1.sql (patched copy: schema_v2_for_real_data.sql).
+-- BEFORE running this file, run materialize_fit.sql once. It stores the fit view v_job_fit in a real table, fact_job_fit
+-- (one row per job x character, about 1.9 million rows). Re-run it whenever the similarity table or the scores change.
+-- Why: the view recomputes about 40 million job x character x trait rows every time it is read, which made the KPI query (Q7) run for minutes.
+-- Q4 explains ONE character for ONE job, so it still reads the detailed view v_fact_job_character_trait.
+-- Q6 reads only the character scores (no fit table).
+-- If anything is renamed in the schema, rename it here too (find and replace), then re-run.
+-- The questions below are working labels: swap in the exact wording from the final business brief.
+-- Written in standard SQL, so it runs in Postgres (the target) and in SQLite.
+
 
 -- Q1. Which jobs fit a given character best, and does the match carry any risk flag?
 --     (example: Jon Snow, character_code 'GOT/1')
