@@ -1,3 +1,15 @@
+"""
+prepare_csv.py  --  turns the raw input files into clean CSV files ready to load into Postgres.
+
+Run it from the folder that holds key.js, characterScores.txt and work_styles.csv:
+    py prepare_csv.py
+or give the folder:   py prepare_csv.py C:\\path\\to\\datafiles
+It writes a subfolder called "clean" and prints a data-quality report.
+
+Optional (development only):  py prepare_csv.py --placeholder-similarity
+writes clean/similarity.csv filled with RANDOM numbers (method = 'RANDOM-TEST') so queries can be tested
+end to end. Results computed from it are meaningless. Never use them in the report.
+"""
 import re
 import sys
 import html
@@ -15,14 +27,14 @@ problems = []
 
 def need(path):
     if not (SRC / path).exists():
-        sys.exit(f"Cannot find {SRC / path}. Run this script from the folder with A's files.")
+        sys.exit(f"Cannot find {SRC / path}. Run this script from the folder with the input files.")
     return SRC / path
 
 
 # ---------------------------------------------------------------- key.js
 key = need("key.js").read_text(encoding="utf-8", errors="replace")
 
-# 525 trait pairs (same regex as A's notebook)
+# 525 trait pairs (same regex as the exploration notebook)
 section = key.split("var measures = {", 1)[1].split("};", 1)[0]
 pairs = re.findall(r'(\d+)\s*:\s*\["([^"]*)",\s*"([^"]*)"\]', section)
 traits = pd.DataFrame(pairs, columns=["trait_id", "trait_low", "trait_high"])
@@ -38,7 +50,7 @@ def clean_text(s):
 for col in ["trait_low", "trait_high"]:
     traits[col] = traits[col].map(clean_text)
 
-# characters and their work (universe) names (same regex as A's notebook, plus the work name)
+# characters and their work (universe) names (same regex as the exploration notebook, plus the work name)
 subjects = key.split("var subjects =", 1)[1]
 rows = []
 for work_code, body in re.findall(r'"([^"]+)"\s*:\s*\{\s*((?:(?!\n\s*"\w+"\s*:\s*\{).)*)', subjects, re.S):
@@ -62,7 +74,7 @@ print("=== DATA-QUALITY REPORT ===")
 print(f"trait pairs found: {len(traits)} (expected 525)")
 is_emoji = lambda s: any(ord(ch) > 0x2000 for ch in str(s))
 emoji_pairs = traits[traits["trait_low"].map(is_emoji) | traits["trait_high"].map(is_emoji)]
-print(f"trait pairs where a pole is an EMOJI, not a word: {len(emoji_pairs)}  <- word-embedding models cannot embed these; tell A")
+print(f"trait pairs where a pole is an EMOJI, not a word: {len(emoji_pairs)}  <- word-embedding models cannot embed these (to be dropped or translated)")
 if len(traits) != 525:
     problems.append("trait pair count is not 525")
 trait_cols = [c for c in scores.columns if c != "character_code"]
