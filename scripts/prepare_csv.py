@@ -1,15 +1,3 @@
-"""
-prepare_csv.py  --  turns A's raw files into clean CSV files ready to load into Postgres.
-
-Run it from the folder that holds key.js, characterScores.txt and work_styles.csv:
-    py prepare_csv.py
-or give the folder:   py prepare_csv.py C:\\path\\to\\datafiles
-It writes a subfolder called "clean" and prints a data-quality report.
-
-Optional (development only):  py prepare_csv.py --placeholder-similarity
-writes clean/similarity.csv filled with RANDOM numbers (method = 'RANDOM-TEST') so queries can be tested
-end to end. Results computed from it are meaningless. Never use them in the report.
-"""
 import re
 import sys
 import html
