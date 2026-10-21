@@ -118,7 +118,7 @@ Applied by `scripts/prepare_csv.py` and `sql/load_real_data.sql`:
 
 - **Similarity values are random placeholders** until the real table (word-embedding similarity between each O\*NET trait and each trait pair) is produced.
 - **35 of the 525 trait pairs are emojis**, which word-embedding models cannot embed. They must be dropped or translated to words.
-- **Fit formula not final:** `v_job_fit` uses a `tanh` curve, but the test file's expected values assume the linear formula `50 * (1 + sum(match) / sum(importance))`.
+- - **Fit curve to tune:** `v_job_fit` computes `50 * (1 + tanh(G * sum(match) / sum(importance)))` with `G = 5`, which spreads scores away from 50. `G` is a starting value, to be tuned on the real similarity values. The expected fit values in the comment at the top of `data/sample/test_data_1.sql` (55.79, 44.21, ...) come from the earlier linear formula; with the current curve the sample prints 76.10, 23.90, 50.00, 75.73, 24.27 and 50.00.
 - **Concentration check:** with random similarity, 10 jobs take about 73% of the characters' best-match spots. Query Q3 should be re-run on the real similarity table.
 
 ## Licensing and attribution
