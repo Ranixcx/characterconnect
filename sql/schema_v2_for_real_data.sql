@@ -1,3 +1,10 @@
+-- Star schema (Postgres) for loading the real data. Two edits to the first draft are marked PATCH 1 and PATCH 2.
+-- The fit formula (tanh in v_job_fit) is unchanged.
+-- Schema v2, built for the data:
+--   SWCPQ: 2125 characters scored on 525 bipolar trait pairs (trait_low / trait_high)
+--   O*NET: 891 jobs x 21 traits (18,711 rows)
+-- Design decisions: surrogate integer key on each dimension, natural key kept
+-- as a UNIQUE column; dim_onet_trait static, dim_job Type 1, dim_character Type 1.
 
 -- ===== Dimensions =====
 
@@ -11,8 +18,8 @@ CREATE TABLE dim_character (
 
 CREATE TABLE dim_job (
     job_key          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    title            TEXT    NOT NULL UNIQUE, -- A's extract only has the work name
-    onet_code        TEXT    UNIQUE,          -- TODO: ask A to keep the O*NET-SOC code (natural key)
+    title            TEXT    NOT NULL UNIQUE, -- the extract only has the work name
+    onet_code        TEXT    UNIQUE,          -- O*NET-SOC code (natural key)
     job_zone         SMALLINT,
     job_family_code  TEXT
 );
@@ -38,7 +45,7 @@ CREATE TABLE fact_character_trait_score (
     character_key   INTEGER NOT NULL REFERENCES dim_character,
     char_trait_key  INTEGER NOT NULL REFERENCES dim_character_trait,
     -- position between the low pole (0) and the high pole (max)
-    -- TODO: confirm scale with A (A says 0-1, the sample shows values up to ~94)
+    -- scale checked on the data: scores run from 1 to 100
     score           NUMERIC(5,2) NOT NULL CHECK (score BETWEEN 0 AND 100),
     PRIMARY KEY (character_key, char_trait_key)      -- grain: character x trait pair
 );
@@ -72,7 +79,7 @@ CREATE TABLE fact_trait_similarity (
 --   2. centered score      c = score / 50 - 1   (0-100 scale)            in [-1, 1]
 --   3. trait level         level(char, O*NET trait) = AVG over the K best pairs of (s * c)
 --   4. match score         match = importance * level
---   5. Job Fit Score       fit = 50 * (1 + SUM(match) / SUM(importance))  in [0, 100]
+--   5. Job Fit Score       fit = 50 * (1 + tanh(G * SUM(match) / SUM(importance))), G = 5  in [0, 100]  (G to tune on real data)
 --        0 = opposite of everything the job needs, 50 = neutral, 100 = perfect match
 --   6. risk flag count     number of O*NET traits with a negative match
 
@@ -100,7 +107,7 @@ WHERE rn <= 5;   -- K (number of best pairs per O*NET trait)
 CREATE VIEW v_character_score_centered AS
 SELECT character_key,
        char_trait_key,
-       score / 50.0 - 1 AS centered_score   -- TODO: if the scale is 0-1, use score * 2 - 1
+       score / 50.0 - 1 AS centered_score   -- scores run 0-100, so centred = score / 50 - 1
 FROM fact_character_trait_score;
 
 -- 4) Character level on each O*NET trait, in [-1, 1].
