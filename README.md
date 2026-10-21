@@ -4,7 +4,7 @@
 
 Data Engineering course project, Assignment 1 (Data Architecture & Modeling).
 
-> **Status: first proposal.** The pipeline runs end to end on the real data, but the character-to-job similarity values are still **random placeholders** (`method = RANDOM-TEST`). Fit scores and rankings produced today are only a test of the plumbing, not results. See [Known issues](#known-issues-and-open-decisions).
+> **Status:** design plus a working pipeline on the real data (Assignment 1). Fit scores currently use test similarity values until the word-embedding table is ready (see [Known issues](#known-issues-and-open-decisions)).
 
 ## What it does
 
@@ -17,7 +17,9 @@ Questions the model answers (see `sql/demo_queries.sql`):
 3. Which jobs come up most often as a character's best match?
 4. Why is a character risky for a job (which traits count against them)?
 5. Which universes produce the best applicants for a job?
-6. KPIs: average best-fit score and number of distinct best-match jobs.
+6. Which characters have a personality closest to a typed-in profile (e.g. bold, diligent, honorable)?
+
+Plus a KPI query (Q7): how good are the best matches overall (average best-fit score), and are they spread over many jobs or piled onto a few (number of distinct best-match jobs)?
 
 ## Data sources
 
@@ -37,7 +39,7 @@ sql/         schema_v2_for_real_data.sql   star schema (tables and views)
              load_real_data.sql            clean CSVs -> staging tables -> dimensions and facts
              load_similarity.sql           similarity table -> fact_trait_similarity
              materialize_fit.sql           stores the fit view as a table (fact_job_fit)
-             demo_queries.sql              the six demo queries
+             demo_queries.sql              the seven demo queries
 data/sample/ test_data_1.sql            tiny invented dataset (3 characters, 2 jobs) to test the schema
 ```
 
@@ -51,7 +53,7 @@ data/sample/ test_data_1.sql            tiny invented dataset (3 characters, 2 j
 | Production | star schema in Postgres | 4 dimensions, 3 facts, 6 views, plus the `fact_job_fit` data mart |
 | Serving | SQL (`sql/demo_queries.sql`) | answers the business questions |
 
-The steps are run by hand for now. Airflow orchestration is planned for Assignment 2.
+The steps are run by hand for now. Airflow orchestration and a Neo4j team-coverage graph (a read-only copy of the star schema, for the question "which group of N characters covers a job best?") are planned for later assignments.
 
 Star schema in short:
 
@@ -129,6 +131,6 @@ Applied by `scripts/prepare_csv.py` and `sql/load_real_data.sql`:
 
 Three students:
 
-- Raphael Winttersdolf, data lead
-- Joudy Souleiman, modelling lead
+- Raphael Wintersdorff, data lead
+- Joudy Suleiman, modelling lead
 - Rania Chaari ([@Ranixcx](https://github.com/Ranixcx)), SQL and integration lead
